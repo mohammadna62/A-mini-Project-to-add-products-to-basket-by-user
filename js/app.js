@@ -101,15 +101,21 @@ const products = [
       "مک‌بوک پرو با پردازنده M1 Pro و ۱۶ گیگابایت رم، مناسب برای کاربران حرفه‌ای اپل که به دنبال عملکرد بی‌نظیر در کارهای سنگین و حرفه‌ای هستند.",
   },
 ];
-const productContainer = document.querySelector(".wrapper")
-const openBasketBtn = document.querySelector(".open-basket")
-const basketScreen = document.querySelector(".basket-screen")
-let basket =[]
+let basket = [];
+const productContainer = document.querySelector(".wrapper");
+const basketProductsContainer = document.querySelector(".basket-main");
+const openBasketBtn = document.querySelector(".open-basket");
+const basketScreen = document.querySelector(".basket-screen");
+const closeBasketBtn = document.querySelector(".close-basket");
+const totalPriceElem = document.querySelector(".total-price");
+const clearBasketButton = document.querySelector(".clear-button");
 
 //* Function Zone
-function showProducts(){
-    products.forEach(function(product){
-        productContainer.insertAdjacentHTML("beforeend",`
+function showProducts() {
+  products.forEach(function (product) {
+    productContainer.insertAdjacentHTML(
+      "beforeend",
+      `
             <article>
           <header class="product-header">
             <img
@@ -136,33 +142,102 @@ function showProducts(){
             </button>
           </footer>
         </article>
-            `)
-    })
+            `,
+    );
+  });
 }
-function addProductToBasket (productId){
-   const mainProduct= products.filter(function(product){
-        return product.id === productId
-    })
-   
-  basket.push(mainProduct)
-   saveBasketInLocalStorage()
-}
-function saveBasketInLocalStorage(){
-    localStorage.setItem("basket", JSON.stringify(basket))
-}
-function showBasketProducts(){
-    basketScreen.classList.remove("hidden")
-    basket.forEach(function(product){
+function addProductToBasket(productID) {
+  const mainProduct = products.find(function (product) {
+    return product.id === productID;
+  });
 
-    })
+  basket.push(mainProduct);
+  saveBasketInLocalStorage();
+  calculateTotalPrice();
 }
-function getProductsFromLocalStorage(){
-    const localBasket = JSON.parse(localStorage.getItem("basket"))
-    if(localBasket){
-       basket = localBasket
-    }
-    showProducts()
+function saveBasketInLocalStorage() {
+  localStorage.setItem("basket", JSON.stringify(basket));
 }
+function showBasketProducts() {
+  basketScreen.classList.remove("hidden");
 
+  basketProductsContainer.innerHTML = "";
+
+  if (basket.length) {
+    basket.forEach(function (product) {
+      basketProductsContainer.insertAdjacentHTML(
+        "beforeend",
+        `
+        <article class="basket-item">
+          <div class="flex-center">
+            <img src="${product.img}" alt="" />
+            <div class="basket-item_details">
+              <p class="basket-item_title">
+                ${product.title}
+              </p>
+              <p class="basket-item_price">${product.price.toLocaleString()} تومان</p>
+            </div>
+            <div>
+              <div class="buttons">
+                <button class="increase">
+                  <i class="bx bx-plus"></i>
+                </button>
+                <button class="remove-button">
+                  <!-- Boxicons trash icon -->
+                  <i class="bx bx-trash"></i>
+                </button>
+                <button class="decrease">
+                  <!-- Decrease icon -->
+                  <i class="bx bx-minus"> </i>
+                </button>
+              </div>
+              <div class="product-count-card">
+                <span>تعداد:</span>
+                <span class="product-count">2</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      `,
+      );
+    });
+  } else {
+    basketProductsContainer.innerHTML = `
+      <p class="empty-basket">
+        سبد خرید شما خالی می باشد 
+      </p>`;
+  }
+
+  calculateTotalPrice();
+}
+function hideBasket() {
+  basketScreen.classList.add("hidden");
+}
+function getProductsFromLocalStorage() {
+  const localBasket = JSON.parse(localStorage.getItem("basket"));
+
+  if (localBasket) {
+    basket = localBasket;
+  }
+
+  showProducts();
+}
+function calculateTotalPrice() {
+  let totalPrice = 0;
+
+  basket.forEach(function (product) {
+    totalPrice += product.price * 1; // 1 -> product.count
+  });
+
+  totalPriceElem.innerHTML = totalPrice.toLocaleString();
+}
+function clearBasket() {
+  basket = [];
+  saveBasketInLocalStorage();
+  showBasketProducts();
+  calculateTotalPrice();
+}
 //* Event Zone
-openBasketBtn.addEventListener("click",showBasketProducts)
+openBasketBtn.addEventListener("click", showBasketProducts);
+closeBasketBtn.addEventListener("click", hideBasket);
+clearBasketButton.addEventListener("click", clearBasket);
