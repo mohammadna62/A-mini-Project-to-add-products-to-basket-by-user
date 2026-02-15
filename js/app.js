@@ -110,6 +110,7 @@ const closeBasketBtn = document.querySelector(".close-basket");
 const totalPriceElem = document.querySelector(".total-price");
 const clearBasketButton = document.querySelector(".clear-button");
 const countElem = document.querySelector(".count");
+const productsCount = document.querySelector(".products-count");
 
 //* Function Zone
 function showProducts() {
@@ -151,11 +152,18 @@ function addProductToBasket(productID) {
   const mainProduct = products.find(function (product) {
     return product.id === productID;
   });
+  const inBasket = basket.find(function (product) {
+    return product.id === productID;
+  });
+  if (inBasket) {
+    inBasket.count += 1;
+  } else {
+    basket.push({ ...mainProduct, count: 1 });
+  }
 
-  basket.push(mainProduct);
   saveBasketInLocalStorage();
   calculateTotalPrice();
-  countOfProductsOnBasket()
+  countOfProductsOnBasket();
 }
 function saveBasketInLocalStorage() {
   localStorage.setItem("basket", JSON.stringify(basket));
@@ -181,21 +189,21 @@ function showBasketProducts() {
             </div>
             <div>
               <div class="buttons">
-                <button class="increase">
+                <button class="increase" onclick="increaseProduct(${product.id})">
                   <i class="bx bx-plus"></i>
                 </button>
                 <button class="remove-button" onclick ="removeProductFromBasket(${product.id})">
                   <!-- Boxicons trash icon -->
                   <i class="bx bx-trash"></i>
                 </button>
-                <button class="decrease">
+                <button class="decrease" onclick="decreaseProduct(${product.id})">
                   <!-- Decrease icon -->
                   <i class="bx bx-minus"> </i>
                 </button>
               </div>
               <div class="product-count-card">
                 <span>تعداد:</span>
-                <span class="product-count">2</span>
+                <span class="product-count">${product.count}</span>
               </div>
             </div>
           </div>
@@ -221,35 +229,67 @@ function getProductsFromLocalStorage() {
   if (localBasket) {
     basket = localBasket;
   }
-  countOfProductsOnBasket()
+  countOfProductsOnBasket();
   showProducts();
 }
 function calculateTotalPrice() {
   let totalPrice = 0;
 
   basket.forEach(function (product) {
-    totalPrice += product.price * 1; // 1 -> product.count
+    totalPrice += product.price * product.count
   });
-
-  totalPriceElem.innerHTML = totalPrice.toLocaleString();
+    let price = totalPrice >= 0 ? totalPrice : 0;
+  totalPriceElem.innerHTML = `${price.toLocaleString()} تومان ` 
 }
 function clearBasket() {
   basket = [];
   saveBasketInLocalStorage();
   showBasketProducts();
   calculateTotalPrice();
-}
-function removeProductFromBasket(productId){
-   const newBasket = basket.filter(function(product){
-    return product.id !== productId
-  })
-  basket = newBasket
   countOfProductsOnBasket()
-  saveBasketInLocalStorage();
-  showBasketProducts()
 }
-function countOfProductsOnBasket(){
-  countElem.innerHTML = basket.length
+function removeProductFromBasket(productId) {
+  const newBasket = basket.filter(function (product) {
+    return product.id !== productId;
+  });
+  basket = newBasket;
+  countOfProductsOnBasket();
+  saveBasketInLocalStorage();
+  showBasketProducts();
+}
+function countOfProductsOnBasket() {
+  countElem.innerHTML = basket.length;
+  productsCount.innerHTML = `(${basket.length})`;
+}
+function increaseProduct(productId){
+  const increaseBasket = basket.find(function(product){
+          return product.id === productId
+  })
+  if(increaseBasket){
+    increaseBasket.count+=1
+  }
+countOfProductsOnBasket()
+saveBasketInLocalStorage()
+showBasketProducts()
+}
+function decreaseProduct(productId){
+  const decreaseBasket = basket.find(function(product){
+          return product.id === productId
+  })
+  if(decreaseBasket){
+    if(decreaseBasket.count >1){
+      
+      decreaseBasket.count-=1
+    }else{
+      decreaseBasket.count =0
+      removeProductFromBasket(productId)
+    }
+  }
+
+
+countOfProductsOnBasket()
+saveBasketInLocalStorage()
+showBasketProducts()
 }
 //* Event Zone
 openBasketBtn.addEventListener("click", showBasketProducts);
