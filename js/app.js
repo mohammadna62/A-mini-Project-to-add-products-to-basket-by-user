@@ -109,6 +109,7 @@ const basketScreen = document.querySelector(".basket-screen");
 const closeBasketBtn = document.querySelector(".close-basket");
 const totalPriceElem = document.querySelector(".total-price");
 const clearBasketButton = document.querySelector(".clear-button");
+const countElem = document.querySelector(".count");
 
 //* Function Zone
 function showProducts() {
@@ -154,6 +155,7 @@ function addProductToBasket(productID) {
   basket.push(mainProduct);
   saveBasketInLocalStorage();
   calculateTotalPrice();
+  countOfProductsOnBasket()
 }
 function saveBasketInLocalStorage() {
   localStorage.setItem("basket", JSON.stringify(basket));
@@ -182,7 +184,7 @@ function showBasketProducts() {
                 <button class="increase">
                   <i class="bx bx-plus"></i>
                 </button>
-                <button class="remove-button">
+                <button class="remove-button" onclick ="removeProductFromBasket(${product.id})">
                   <!-- Boxicons trash icon -->
                   <i class="bx bx-trash"></i>
                 </button>
@@ -219,7 +221,7 @@ function getProductsFromLocalStorage() {
   if (localBasket) {
     basket = localBasket;
   }
-
+  countOfProductsOnBasket()
   showProducts();
 }
 function calculateTotalPrice() {
@@ -236,6 +238,18 @@ function clearBasket() {
   saveBasketInLocalStorage();
   showBasketProducts();
   calculateTotalPrice();
+}
+function removeProductFromBasket(productId){
+   const newBasket = basket.filter(function(product){
+    return product.id !== productId
+  })
+  basket = newBasket
+  countOfProductsOnBasket()
+  saveBasketInLocalStorage();
+  showBasketProducts()
+}
+function countOfProductsOnBasket(){
+  countElem.innerHTML = basket.length
 }
 //* Event Zone
 openBasketBtn.addEventListener("click", showBasketProducts);
